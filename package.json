@@ -1,0 +1,61 @@
+{
+  "name": "essence",
+  "version": "0.0.1",
+  "description": "essence: module scaffold",
+  "private": true,
+  "babel": {
+    "presets": [
+      "env"
+    ]
+  },
+  "browserslist": [
+    "last 2 versions"
+  ],
+  "devDependencies": {
+    "async": "^2.6.1",
+    "babel-preset-env": "^1.7.0",
+    "babel-register": "^6.26.0",
+    "babelify": "^8.0.0",
+    "browser-sync": "^2.26.3",
+    "browserify": "^16.2.3",
+    "co": "^4.6.0",
+    "gulp": "^4.0.0",
+    "gulp-autoprefixer": "^6.0.0",
+    "gulp-clean-css": "^4.0.0",
+    "gulp-csscomb": "^3.0.8",
+    "gulp-csso": "^3.0.1",
+    "gulp-filter": "^5.1.0",
+    "gulp-gm": "0.0.9",
+    "gulp-gzip": "^1.4.2",
+    "gulp-iconfont": "^10.0.2",
+    "gulp-imagemin": "^5.0.3",
+    "gulp-jsbeautifier": "^2.1.2",
+    "gulp-merge-media-queries": "^0.2.1",
+    "gulp-newer": "^1.4.0",
+    "gulp-plumber": "^1.2.0",
+    "gulp-pug": "^4.0.1",
+    "gulp-rename": "^1.4.0",
+    "gulp-replace": "^1.0.0",
+    "gulp-sourcemaps": "^2.6.4",
+    "gulp-stylus": "^2.7.0",
+    "gulp-template": "^5.0.0",
+    "gulp-uglify": "^3.0.1",
+    "gulp.plus-loader": "git+https://github.com/tabayashi/gulp.plus-loader.git",
+    "gulp.plus-parameter": "git+https://github.com/tabayashi/gulp.plus-parameter.git",
+    "gulp.plus-router": "git+https://github.com/tabayashi/gulp.plus-router.git",
+    "gulp.spritesmith": "^6.9.0",
+    "imagemin-jpegtran": "^6.0.0",
+    "imagemin-mozjpeg": "^8.0.0",
+    "imagemin-pngquant": "^6.0.0",
+    "jstransformer-babel": "^2.1.0",
+    "jstransformer-cdata": "^1.0.0",
+    "jstransformer-escape-html": "^1.1.0",
+    "jstransformer-stylus": "^1.5.0",
+    "merge-stream": "^1.0.1",
+    "pug-php-filter": "0.0.1",
+    "through2": "^3.0.0",
+    "thunkify": "^2.1.2",
+    "vinyl-buffer": "^1.0.1",
+    "workspace": "git+https://github.com/tabayashi/workspace.git"
+  }
+}

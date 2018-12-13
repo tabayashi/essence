@@ -1,0 +1,29 @@
+fontsURL ?= '../fonts';
+@font-face {
+  font-family: "<%= fontname %>";
+          src: url(pathjoin(fontsURL, "<%= fontname %>" + ".eot"));
+          src: url(pathjoin(fontsURL, "<%= fontname %>" + ".eot?#iefix")) format('eot'),
+               url(pathjoin(fontsURL, "<%= fontname %>" + ".woff")) format('woff'),
+               url(pathjoin(fontsURL, "<%= fontname %>" + ".ttf")) format('truetype');
+   font-style: normal;
+  font-weight: normal;
+}
+$<%= fontname %> {
+  font-family: "<%= fontname %>";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  speak: none;
+  text-decoration: none;
+  text-transform: none;
+}
+<% glyphs.forEach(function(glyph) { %>
+.<%= fontname %>--<%= glyph.name %> {
+  @extend $<%= fontname %>;
+  &::before {
+    content: '\<%= glyph.codepoint %>';
+  }
+}
+<% }); %>

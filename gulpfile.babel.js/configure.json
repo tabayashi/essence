@@ -1,0 +1,8 @@
+{
+  "development": {
+    "DocumentRoot": "public"
+  },
+  "production": {
+    "DocumentRoot": "public"
+  }
+}
