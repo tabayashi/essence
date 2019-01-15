@@ -1,0 +1,34 @@
+block php
+block vars
+  -
+    var htdocs = '';
+    var attributes = {
+      html: {
+        lang: "ja",
+        class: ["no-js"]
+      },
+      head: {},
+      body: {}
+    };
+block functions
+html&attributes(attributes.html)
+  head&attributes(attributes.head)
+    block charset
+      meta(charset="utf-8")
+    block viewport
+      meta(name="viewport" content="width=device-width, initial-scale=1")
+    block title
+      title default title
+    block descriptions
+    block keywords
+    block init
+  body&attributes(attributes.body)
+    block head
+    block body
+    block foot
+      script
+        :babel
+          ((classList) => {
+            classList.remove('no-js');
+            classList.add('js');
+          })(document.documentElement.classList);

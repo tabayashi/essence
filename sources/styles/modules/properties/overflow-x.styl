@@ -1,0 +1,13 @@
+$TD-overflow-x-ellipsis {
+  overflow-x: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+overflow-x(value) {
+  if value == ellipsis {
+    @extend $TD-overflow-x-ellipsis;
+  } else {
+    overflow-x: value;
+  }
+}

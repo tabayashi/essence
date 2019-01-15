@@ -1,16 +1,14 @@
 'use strict';
-module.exports = (runner, tasks, configure) => {
+module.exports = (runner, tasks) => {
   const src      = runner.src;
   const dest     = runner.dest;
   const job      = runner.task;
   const series   = runner.series;
   const parallel = runner.parallel;
   const watch    = runner.watch;
-  const config   = configure.development;
-  const docroot  = config.DocumentRoot;
-  const join     = require('path').join;
   const merge    = require('merge-stream');
   const buffer   = require('vinyl-buffer');
+  const c        = (require('./configure.json')).development;
 
   // ---------------------------------------------------------------------------
   // BrowserSync
@@ -29,88 +27,46 @@ module.exports = (runner, tasks, configure) => {
   });
 
   // ---------------------------------------------------------------------------
-  // Data files
+  // data files
   // ---------------------------------------------------------------------------
   job('data.build', () =>
-    src('data/**/*', {base: 'data'})
-      .pipe(tasks.plumber())
-      .pipe(tasks.newer({dest: docroot}))
-      .pipe(dest(docroot)));
+    src(c.data.src, {dot:true}).pipe(dest(c.data.dest)));
 
   job('data.watch', () =>
-    watch('data/**/*', series('data.build', 'browser.reload')));
+    watch(c.data.watch, series('data.build', 'browser.reload')));
 
   // ---------------------------------------------------------------------------
-  // robots.txt
-  // ---------------------------------------------------------------------------
-  job('robots.build', () =>
-    src('pages/robots.txt', {base: 'pages'})
-      .pipe(tasks.plumber())
-      .pipe(tasks.newer({dest: docroot}))
-      .pipe(dest(docroot)));
-
-  job('robots.watch', () =>
-    watch('pages/robots.txt', series('robots.build', 'browser.reload')));
-
-  // ---------------------------------------------------------------------------
-  // htaccess
-  // ---------------------------------------------------------------------------
-  job('htaccess.build', () =>
-    src('pages/**/.htaccess', {base: 'pages'})
-      .pipe(tasks.plumber())
-      .pipe(tasks.newer({dest: docroot}))
-      .pipe(dest(docroot)));
-
-  job('htaccess.watch', () =>
-    watch('pages/**/.htaccess', series('htaccess.build', 'browser.reload')));
-
-  // ---------------------------------------------------------------------------
-  // PHP
-  // ---------------------------------------------------------------------------
-  job('php.build', () =>
-    src('pages/**/*.php', {base: 'pages'})
-      .pipe(tasks.plumber())
-      .pipe(tasks.newer({dest: docroot}))
-      .pipe(dest(docroot)));
-
-  job('php.watch', () =>
-    watch('pages/**/*.php', series('php.build', 'browser.reload')));
-
-  // ---------------------------------------------------------------------------
-  // HTML
+  // html
   // ---------------------------------------------------------------------------
   job('html.build', () =>
-    src('pages/**/*.pug', {base: 'pages'})
+    src(c.html.src)
       .pipe(tasks.plumber())
       .pipe(tasks.pug({
+        doctype: 'html',
         filters: {php: require('pug-php-filter')},
-        basedir: 'node_modules'
+        basedir: c.html.inc
       }))
       .pipe(tasks.beautify())
-      .pipe(tasks.replace(RegExp('<!DOCTYPE html>'), '<!doctype html>'))
-      .pipe(tasks.replace(RegExp('(<!-->)\n(<html)', 'i'), '$1$2'))
-      .pipe(tasks.replace(RegExp('\n(<!--<!\[endif\]-->)', 'i'), '$1'))
       .pipe(tasks.replace(RegExp('\n+', 'g'), '\n'))
-      .pipe(dest(docroot)));
+      .pipe(dest(c.html.dest)));
 
   job('html.watch', () =>
-    watch('pages/**/*.pug', series('html.build', 'browser.reload')));
+    watch(c.html.watch, series('html.build', 'browser.reload')));
 
   // ---------------------------------------------------------------------------
-  // CSS
+  // css
   // ---------------------------------------------------------------------------
   job('css.build', () =>
-    src('styles/*.styl')
+    src(c.css.src)
       .pipe(tasks.plumber())
       .pipe(tasks.sourcemaps.init())
       .pipe(tasks.stylus({
         define: {
-          fontsURL: '../fonts',
-          mediaURL: '../assets'
+          fontsURL:  '/fonts',
+          assetsURL: '/assets'
         },
-        include: ['node_modules', 'styles/data']
+        include: c.css.inc
       }))
-      .pipe(tasks.replace(RegExp('(progid:)\s+', 'g'), '$1'))
       .pipe(tasks.sourcemaps.write({includeContent: false}))
       .pipe(tasks.sourcemaps.init({loadMaps: true}))
       .pipe(tasks.autoprefixer())
@@ -119,178 +75,131 @@ module.exports = (runner, tasks, configure) => {
       .pipe(tasks.csscomb())
       .pipe(tasks.beautify())
       .pipe(tasks.sourcemaps.write())
-      .pipe(dest(docroot)));
+      .pipe(dest(c.css.dest)));
 
   job('css.watch', () =>
-    watch('styles/**/*.styl', series('css.build', 'browser.reload')));
+    watch(c.css.watch, series('css.build', 'browser.reload')));
 
   // ---------------------------------------------------------------------------
-  // JS
+  // js
   // ---------------------------------------------------------------------------
   job('js.build', () =>
-    src('scripts/*.js')
+    src(c.js.src)
       .pipe(tasks.plumber())
       .pipe(tasks.sourcemaps.init())
       .pipe(tasks.browserify())
       .pipe(tasks.beautify())
       .pipe(tasks.sourcemaps.write())
-      .pipe(dest(docroot)));
+      .pipe(dest(c.js.dest)));
 
   job('js.watch', () =>
-    watch('scripts/**/*.js', series('js.build', 'browser.reload')));
+    watch(c.js.watch, series('js.build', 'browser.reload')));
 
   // ---------------------------------------------------------------------------
-  // Assets
+  // assets
   // ---------------------------------------------------------------------------
-  let comparison = '.asset-comparisons';
-
-  job('assets.retina.build', () => {
-    let filter2x = tasks.filter(['**/*.*', '!**/*@1x.*']);
-    return src('assets/**/*.{jpg,jpeg,gif,png,svg}')
+  job('assets.build', () => {
+    let filter = tasks.filter(['**/*.*', '!**/*@1x.*'], {restore: true});
+    return src(c.assets.src)
       .pipe(tasks.plumber())
-      .pipe(tasks.newer({dest: comparison}))
-      .pipe(dest(comparison))
-      .pipe(filter2x)
-      .pipe(tasks.rename({ suffix: '@2x' }))
       .pipe(tasks.imagemin())
-      .pipe(dest(docroot));
-  });
-
-  job('assets.reduce.build', () => {
-    let filter2x = tasks.filter(['**/*.*', '!**/*@1x.*'], {restore: true});
-    return src('assets/**/*.{jpg,jpeg,gif,png,svg}')
-      .pipe(tasks.plumber())
-      .pipe(tasks.newer({dest: comparison}))
-      .pipe(dest(comparison))
-      .pipe(filter2x)
+      .pipe(filter)
+      .pipe(tasks.rename({suffix: '@2x'}))
+      .pipe(dest(c.assets.dest))
+      .pipe(tasks.rename(path => path.basename = path.basename.replace(/@2x/, '')))
       .pipe(tasks.reduce())
-      .pipe(filter2x.restore)
+      .pipe(filter.restore)
       .pipe(tasks.rename(path => path.basename = path.basename.replace(/@1x/, '')))
-      .pipe(tasks.imagemin())
-      .pipe(dest(docroot));
+      .pipe(dest(c.assets.dest));
   });
-
-  job('assets.build', parallel('assets.retina.build', 'assets.reduce.build'));
 
   job('assets.watch', () =>
-    watch('assets/**/*.{jpg,jpeg,gif,png,svg}', series('assets.build', 'browser.reload')));
+    watch(c.assets.watch, series('assets.build', 'browser.reload')));
 
   // ---------------------------------------------------------------------------
-  // Sprites
+  // sprites
   // ---------------------------------------------------------------------------
-  job('sprites.retina.build', () => {
-    let sprite = src('sprites/*.png')
-      .pipe(tasks.plumber())
-      .pipe(tasks.sprite({
-        imgName: 'sprites@2x.png',
-        cssName: 'sprites.json',
+  job('sprites.build', () =>
+    src(.c.sprites.src).pipe(tasks.aggregate((group, files, deferred) => {
+      let srcfiles = files.map(file => file.path);
+      let sprite2x = src(srcfiles).pipe(tasks.sprite({
+        imgName: group + '@2x.png',
+        cssName: group + '.json',
         algorithm: 'binary-tree',
         padding: 6
       }));
-    return sprite.img
-                 .pipe(buffer())
-                 .pipe(tasks.imagemin())
-                 .pipe(dest(join(docroot, 'assets')));
-  });
-
-  job('sprites.reduce.build', () => {
-    let sprite = src('sprites/*.png')
-      .pipe(tasks.plumber())
-      .pipe(tasks.reduce())
-      .pipe(tasks.sprite({
-        imgName: 'sprites.png',
-        cssName: 'sprites.json',
+      let sprite1x = src(srcfiles).pipe(tasks.sprite({
+        imgName: group + '.png',
+        cssName: group + '.json',
         algorithm: 'binary-tree',
         padding: 3
       }));
-    let image = sprite.img;
-    let style = sprite.css;
-    return merge(
-      image.pipe(buffer())
-           .pipe(tasks.imagemin())
-           .pipe(dest(join(docroot, 'assets'))),
-      style.pipe(tasks.spritesheet())
-           .pipe(tasks.beautify())
-           .pipe(dest('styles/data')));
-  });
-
-  job('sprites.build',
-    parallel('sprites.retina.build', 'sprites.reduce.build'));
+      merge(
+        sprite2x.img.pipe(buffer())
+                    .pipe(tasks.imagemin())
+                    .pipe(dest(c.sprites.dest.img)),
+        sprite1x.img.pipe(buffer())
+                    .pipe(tasks.imagemin())
+                    .pipe(dest(c.sprites.dest.img)),
+        sprite1x.css.pipe(tasks.spritesheet())
+                    .pipe(tasks.beautify())
+                    .pipe(dest(c.sprites.dest.css))
+      ).on('end', () => deferred.resolve());
+      return deferred.promise;
+    })));
 
   job('sprites.watch', () =>
-    watch('sprites/*.png', series('sprites.build', 'browser.reload')));
+    watch(c.sprites.watch, series('sprites.build', 'browser.reload')));
 
   // ---------------------------------------------------------------------------
-  // IconFont
+  // icons
   // ---------------------------------------------------------------------------
-
   job('icons.build', () =>
-    src('icons/*.svg', {base: 'icons'})
-      .pipe(tasks.plumber())
-      .pipe(tasks.imagemin(
-        [(require('imagemin-svgo'))()],
-        {verbose: true}
-      ))
-      .pipe(tasks.iconfont({fontName: 'icons'}))
-      .on('glyphs', (glyphs, options) =>
-        src('gulpfile.babel.js/templates/styles/data/iconfont.styl', {
-          base: 'gulpfile.babel.js/templates'
-        }).pipe(tasks.template({
-            fontname: 'icons',
-            glyphs: glyphs.map(glyph => {
-              return {
-                name: glyph.name,
-                codepoint: glyph.unicode[0].charCodeAt(0).toString(16),
-              };
-            })
-          }))
-          .pipe(tasks.rename({basename: 'icons'}))
-          .pipe(dest('.')))
-      .pipe(dest(join(docroot, 'fonts'))));
+    src(c.icons.src.fonts).pipe(tasks.aggregate((group, files, deferred) => {
+      src(files.map(file =>file.path))
+        .pipe(tasks.plumber())
+        .pipe(tasks.imagemin([(require('imagemin-svgo'))()]))
+        .pipe(tasks.iconfont({fontName: group}))
+        .on('glyphs', (glyphs, options) =>
+          src(c.icons.src.styles)
+            .pipe(tasks.template({
+              fontname: 'icons',
+              glyphs: glyphs.map(glyph => {
+                return {
+                  name: glyph.name,
+                  codepoint: glyph.unicode[0].charCodeAt(0).toString(16)
+                };
+              })
+            }))
+            .pipe(tasks.rename({basename: group}))
+            .pipe(dest(c.icons.dest.styles)))
+        .pipe(dest(c.icons.dest.fonts)))
+        .on('end', deferred.resolve());
+      return deferred.promise;
+    })));
 
   job('icons.watch', () =>
-    watch('icons/*.svg', series('icons.build', 'browser.reload')));
+    watch(c.icons.watch, series('icons.build', 'browser.reload')));
 
   // ---------------------------------------------------------------------------
-  // fonts
-  // ---------------------------------------------------------------------------
-  job('fonts.build', () =>
-    src('fonts/**/*')
-      .pipe(tasks.plumber())
-      .pipe(dest(docroot)));
-
-  job('fonts.watch', () =>
-    watch('fonts/**/*', series('fonts.build', 'browser.reload')));
-
-  // ---------------------------------------------------------------------------
-  // Deploy
+  // deploy
   // ---------------------------------------------------------------------------
   job('deploy', series(
-    parallel('sprites.build', 'icons.build', 'assets.build'),
-    parallel('data.build', 'robots.build', 'htaccess.build', 'php.build',
-             'html.build', 'css.build', 'js.build', 'fonts.build')));
+    parallel('sprites.build', 'icons.build'),
+    parallel('html.build', 'css.build', 'js.build',
+             'data.build', 'assets.build')));
 
   // ---------------------------------------------------------------------------
-  // Watch
+  // watch
   // ---------------------------------------------------------------------------
   job('watch',
-    series(
-      'browser.init',
-      parallel(
-        'data.watch',
-        'robots.watch',
-        'htaccess.watch',
-        'php.watch',
-        'html.watch',
-        'css.watch',
-        'js.watch',
-        'assets.watch',
-        'sprites.watch',
-        'icons.watch',
-        'fonts.watch')));
+    series('browser.init',
+      parallel('sprites.watch', 'icons.watch',
+               'html.watch', 'css.watch', 'js.watch',
+               'data.watch', 'assets.watch')));
 
   // ---------------------------------------------------------------------------
-  // Default
+  // default
   // ---------------------------------------------------------------------------
   job('default', series('watch'));
 };

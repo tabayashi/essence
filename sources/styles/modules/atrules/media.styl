@@ -1,0 +1,18 @@
+$TD-mediaqueries = {};
+set-mediaquery(name, query, force = false) {
+  unless force and name in $TD-mediaqueries {
+    $TD-mediaqueries[name] = query;
+  }
+}
+set-highres = set-breakpoint = set-mediaquery;
+
+mediaquery(name) {
+  if name in $TD-mediaqueries {
+    @media $TD-mediaqueries[name] {
+      {block}
+    }
+  }
+}
+highres = breakpoint = mediaquery;
+
+set-highres(retina, "(-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)", true);

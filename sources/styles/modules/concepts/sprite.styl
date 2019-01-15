@@ -1,0 +1,96 @@
+@require "../atrules/media";
+@require "../functions/assets";
+set-highres(retina, '(-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)');
+
+$TD-spriteimage {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  &::before {
+    display: block;
+    width:  100%;
+    height: 100%;
+    position: absolute;
+    image-rendering: optimizeQuality;
+    user-drag: none;
+  }
+}
+
+spriteimage(src, width = 0, height = 0, top = 0, left = 0, src2x = true, dirname = assetsURL) {
+  if src2x is true {
+    src2x = pathjoin(
+      dirname(src),
+      basename(src, extname(src)) + '@2x' + extname(src));
+  }
+  if dirname {
+    src = pathjoin(dirname, src);
+  }
+  @extend $TD-spriteimage;
+  width:  width;
+  height: height;
+  &::before {
+    content url(src);
+    top:  top;
+    left: left;
+    if src2x {
+      src2x = pathjoin(dirname, src2x);
+      +highres(retina) {
+        content: url(src2x);
+        transform: scale(0.5);
+        transform-origin: 0 0;
+      }
+    }
+  }
+}
+
+$TD-spritedata = {};
+--spritedata(sheetname) {
+  unless sheetname in keys($TD-spritedata) {
+    $TD-spritedata[sheetname] = json(sheetname + '.json', {hash: true});
+  }
+  return 2 == length(arguments) ? $TD-spritedata[sheetname][arguments[1]] : $TD-spritedata[sheetname];
+}
+
+$TD-current-sprite = {};
+--set-current-sprite(sheetname, src, src2x = true, dirname = assetsURL) {
+  $TD-current-sprite.sheetname = sheetname;
+  $TD-current-sprite.src = src;
+  $TD-current-sprite.src2x = src2x;
+  $TD-current-sprite.dirname = dirname;
+}
+
+--get-current-sprite() {
+  return $TD-current-sprite;
+}
+
+spritesheet(sheetname, extname = '.png', src = false, src2x = true, dirname = assetsURL) {
+  src = sheetname + extname unless src;
+  --spritedata(sheetname);
+  --set-current-sprite(sheetname, src, src2x, dirname);
+  return @(spritename) {
+    rsrc   = --get-current-sprite();
+    hash   = --spritedata(rsrc.sheetname, spritename);
+    states = keys(hash);
+    spriteimage(rsrc.src, src2x: rsrc.src2x, dirname: rsrc.dirname);
+    if 'default' in states {
+      width: hash.default.width
+      height: hash.default.height
+      &::before {
+        top: hash.default.top
+        left: hash.default.left
+      }
+    }
+    for state in ('link' 'visited' 'hover' 'active') {
+      if state in states {
+        &:{state} {
+          width: hash[state].width
+          height: hash[state].height
+          &::before {
+            top: hash[state].top
+            left: hash[state].left
+          }
+        }
+      }
+    }
+  };
+}

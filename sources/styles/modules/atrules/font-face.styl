@@ -1,0 +1,12 @@
+fontsURL ?= '../fonts';
+font-face(family, basename = family, weight = normal) {
+  @font-face {
+    font-family: family;
+            src: url(pathjoin(fontsURL, basename + ".eot"));
+            src: url(pathjoin(fontsURL, basename + ".eot?#iefix")) format('eot'),
+                 url(pathjoin(fontsURL, basename + ".woff")) format('woff'),
+                 url(pathjoin(fontsURL, basename + ".ttf")) format('truetype');
+     font-style: normal;
+    font-weight: weight;
+  }
+}

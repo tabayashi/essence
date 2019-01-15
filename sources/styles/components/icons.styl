@@ -1,0 +1,77 @@
+fontsURL ?= '../fonts';
+@font-face {
+  font-family: "icons";
+          src: url(pathjoin(fontsURL, "icons" + ".eot"));
+          src: url(pathjoin(fontsURL, "icons" + ".eot?#iefix")) format('eot'),
+               url(pathjoin(fontsURL, "icons" + ".woff")) format('woff'),
+               url(pathjoin(fontsURL, "icons" + ".ttf")) format('truetype');
+   font-style: normal;
+  font-weight: normal;
+}
+$icons {
+  font-family: "icons";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  speak: none;
+  text-decoration: none;
+  text-transform: none;
+}
+
+.icons--32point-burst {
+  @extend $icons;
+  &::before {
+    content: '\ea01';
+  }
+}
+
+.icons--arrow--left {
+  @extend $icons;
+  &::before {
+    content: '\ea02';
+  }
+}
+
+.icons--arrow--right {
+  @extend $icons;
+  &::before {
+    content: '\ea03';
+  }
+}
+
+.icons--crown {
+  @extend $icons;
+  &::before {
+    content: '\ea04';
+  }
+}
+
+.icons--fax {
+  @extend $icons;
+  &::before {
+    content: '\ea05';
+  }
+}
+
+.icons--freeaccess {
+  @extend $icons;
+  &::before {
+    content: '\ea06';
+  }
+}
+
+.icons--phone {
+  @extend $icons;
+  &::before {
+    content: '\ea07';
+  }
+}
+
+.icons--rectangle {
+  @extend $icons;
+  &::before {
+    content: '\ea08';
+  }
+}

@@ -7,11 +7,20 @@ module.exports = function() {
         var path = require('path');
         var through2 = require('through2');
         var PluginError = require('plugin-error');
-        var Vinyl = require('vinyl');
+        var Vinyl  = require('vinyl');
+        var filter = function(data) {
+          return data;
+        };
+
+        if (Object.prototype.toString.call(options) === '[object Function]') {
+          filter  = options;
+          options = ([].slice.call(arguments))[1];
+        }
 
         options = Object.assign({
           glue: '--',
-          state: 'default'
+          state: 'default',
+          filter: filter
         }, options || {});
 
         var firstfile;
@@ -30,7 +39,7 @@ module.exports = function() {
             var contents = files.reduce(function(memo, file) {
               var json = JSON.parse(file.contents.toString());
               Object.keys(json).forEach(function(name) {
-                var values = json[name];
+                var values = options.filter(json[name]);
                 var pixel  = values.px;
                 var names  = name.split(options.glue);
                 var state  = names.length > 1 ? names.pop() : options.state;

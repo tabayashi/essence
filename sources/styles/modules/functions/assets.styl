@@ -1,0 +1,50 @@
+assetsURL ?= '../assets';
+$TD-assets = {};
+$TD-assets.src2x = ();
+$TD-assets.query = retina;
+--is-call(value) {
+  return value == __CALL__;
+}
+
+--has-call(items) {
+  for item in items {
+    return true if --is-call(item);
+  }
+  return false;
+}
+
+--has-src2x() {
+  return !!length($TD-assets.src2x);
+}
+
+--push-src2x(value) {
+  push($TD-assets.src2x, value);
+}
+
+--shift-src2x() {
+  return shift($TD-assets.src2x);
+}
+
+--reset-src2x() {
+  $TD-assets.src2x = ();
+}
+
+--get-src2x-query() {
+  return $TD-assets.query;
+}
+
+--set-src2x-query(query) {
+  $TD-assets.query = query;
+}
+
+assets(src, src2x = true, query = retina) {
+  return if --has-call(current-property[0]);
+  if src2x == true {
+    src2x = pathjoin(dirname(src), basename(src, extname(src)) + '@2x' + extname(src))
+  }
+  if src2x {
+    --push-src2x(url(pathjoin(assetsURL, src2x)));
+    --set-src2x-query(query);
+  }
+  return url(pathjoin(assetsURL, src));
+}

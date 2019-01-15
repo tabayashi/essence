@@ -1,0 +1,19 @@
+@require "../atrules/media";
+@require "../functions/assets";
+
+background() {
+  background: arguments;
+  if has-src2x() {
+    args = ();
+    for argv in arguments {
+      if type(argv) == call {
+        argv = --shift-src2x();
+      }
+      push(args, argv);
+    }
+    --reset-src2x();
+    +highres(--get-src2x-query()) {
+      background: args;
+    }
+  }
+}

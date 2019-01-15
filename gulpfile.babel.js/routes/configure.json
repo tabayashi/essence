@@ -1,0 +1,54 @@
+{
+  "development": {
+    "data": {
+      "watch": "sources/data/files/**/*",
+      "src": "sources/data/files/**/*",
+      "dest": "public"
+    },
+    "html": {
+      "watch": "sources/pages/**/*.pug",
+      "src": "sources/pages/files/**/*.pug",
+      "inc": "",
+      "dest": "public"
+    },
+    "css": {
+      "watch": "sources/styles/**/*.styl",
+      "src": "sources/styles/files/*.styl",
+      "inc": [
+        "sources/styles/modules",
+        "sources/styles/components"
+      ],
+      "dest": "public/styles"
+    },
+    "js": {
+      "watch": "sources/scripts/**/*.js",
+      "src": "sources/scripts/files/*.js",
+      "dest": "public/scripts"
+    },
+    "assets": {
+      "watch": "sources/assets/files/**/*",
+      "src": "sources/assets/files/**/*",
+      "dest": "public/assets"
+    },
+    "sprites": {
+      "watch": "sources/sprites/files/**/*.png",
+      "src": "sources/sprites/files/**/*.png",
+      "dest": {
+        "img": "public/assets",
+        "css": "sources/styles/components"
+      }
+    },
+    "icons": {
+      "watch": "sources/icons/files/**/*.svg",
+      "src": {
+        "fonts": "sources/icons/files/**/*.svg",
+        "styles": "gulpfile.babel.js/templates/styles/components/iconfont.styl"
+      },
+      "dest": {
+        "fonts": "public/fonts",
+        "styles": "sources/styles/components"
+      }
+    }
+  },
+  "production": {}
+}

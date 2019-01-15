@@ -1,0 +1,13 @@
+$columns {
+  display: flex;
+  &>*,
+  &.normal>* {
+    flex: none;
+  }
+  &.auto>* {
+    flex: auto;
+  }
+  &.justify>* {
+    flex: 1 1 0;
+  }
+}
