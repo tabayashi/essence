@@ -58,6 +58,7 @@
     "through2": "^3.0.0",
     "thunkify": "^2.1.2",
     "vinyl-buffer": "^1.0.1",
+    "vinyl-string": "^1.0.2",
     "workspace": "git+https://github.com/tabayashi/workspace.git"
   }
 }

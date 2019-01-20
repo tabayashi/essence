@@ -7,6 +7,7 @@ module.exports = (runner, tasks) => {
   const parallel = runner.parallel;
   const watch    = runner.watch;
   const merge    = require('merge-stream');
+  const contents = require('vinyl-string');
   const buffer   = require('vinyl-buffer');
   const c        = (require('./configure.json')).development;
 
@@ -120,7 +121,7 @@ module.exports = (runner, tasks) => {
   // sprites
   // ---------------------------------------------------------------------------
   job('sprites.build', () =>
-    src(.c.sprites.src).pipe(tasks.aggregate((group, files, deferred) => {
+    src(c.sprites.src).pipe(tasks.aggregate((group, files) => {
       let srcfiles = files.map(file => file.path);
       let sprite2x = src(srcfiles).pipe(tasks.sprite({
         imgName: group + '@2x.png',
@@ -134,18 +135,15 @@ module.exports = (runner, tasks) => {
         algorithm: 'binary-tree',
         padding: 3
       }));
-      merge(
-        sprite2x.img.pipe(buffer())
-                    .pipe(tasks.imagemin())
-                    .pipe(dest(c.sprites.dest.img)),
-        sprite1x.img.pipe(buffer())
-                    .pipe(tasks.imagemin())
-                    .pipe(dest(c.sprites.dest.img)),
-        sprite1x.css.pipe(tasks.spritesheet())
-                    .pipe(tasks.beautify())
-                    .pipe(dest(c.sprites.dest.css))
-      ).on('end', () => deferred.resolve());
-      return deferred.promise;
+      return merge(sprite2x.img.pipe(buffer())
+                               .pipe(tasks.imagemin())
+                               .pipe(dest(c.sprites.dest.img)),
+                   sprite1x.img.pipe(buffer())
+                               .pipe(tasks.imagemin())
+                               .pipe(dest(c.sprites.dest.img)),
+                   sprite1x.css.pipe(tasks.spritesheet())
+                               .pipe(tasks.beautify())
+                               .pipe(dest(c.sprites.dest.css)));
     })));
 
   job('sprites.watch', () =>
@@ -155,28 +153,22 @@ module.exports = (runner, tasks) => {
   // icons
   // ---------------------------------------------------------------------------
   job('icons.build', () =>
-    src(c.icons.src.fonts).pipe(tasks.aggregate((group, files, deferred) => {
-      src(files.map(file =>file.path))
+    src(c.icons.src).pipe(tasks.aggregate((group, files) =>
+      src(files.map(file => file.path))
         .pipe(tasks.plumber())
         .pipe(tasks.imagemin([(require('imagemin-svgo'))()]))
         .pipe(tasks.iconfont({fontName: group}))
         .on('glyphs', (glyphs, options) =>
-          src(c.icons.src.styles)
-            .pipe(tasks.template({
-              fontname: 'icons',
-              glyphs: glyphs.map(glyph => {
-                return {
-                  name: glyph.name,
-                  codepoint: glyph.unicode[0].charCodeAt(0).toString(16)
-                };
-              })
-            }))
-            .pipe(tasks.rename({basename: group}))
-            .pipe(dest(c.icons.dest.styles)))
-        .pipe(dest(c.icons.dest.fonts)))
-        .on('end', deferred.resolve());
-      return deferred.promise;
-    })));
+          contents(JSON.stringify({
+            fontname: group,
+            glyphs: glyphs.map(glyph => {
+              return {
+                name: glyph.name,
+                codepoint: glyph.unicode[0].charCodeAt(0).toString(16)
+              };
+            })
+          }), {path: group + '.json'}).pipe(dest(c.icons.dest.styles)))
+        .pipe(dest(c.icons.dest.fonts)))));
 
   job('icons.watch', () =>
     watch(c.icons.watch, series('icons.build', 'browser.reload')));

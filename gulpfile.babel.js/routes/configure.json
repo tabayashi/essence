@@ -8,13 +8,14 @@
     "html": {
       "watch": "sources/pages/**/*.pug",
       "src": "sources/pages/files/**/*.pug",
-      "inc": "",
+      "inc": "node_modules",
       "dest": "public"
     },
     "css": {
       "watch": "sources/styles/**/*.styl",
       "src": "sources/styles/files/*.styl",
       "inc": [
+        "sources/styles/data",
         "sources/styles/modules",
         "sources/styles/components"
       ],
@@ -35,18 +36,15 @@
       "src": "sources/sprites/files/**/*.png",
       "dest": {
         "img": "public/assets",
-        "css": "sources/styles/components"
+        "css": "sources/styles/data"
       }
     },
     "icons": {
       "watch": "sources/icons/files/**/*.svg",
-      "src": {
-        "fonts": "sources/icons/files/**/*.svg",
-        "styles": "gulpfile.babel.js/templates/styles/components/iconfont.styl"
-      },
+      "src": "sources/icons/files/**/*.svg",
       "dest": {
         "fonts": "public/fonts",
-        "styles": "sources/styles/components"
+        "styles": "sources/styles/data"
       }
     }
   },

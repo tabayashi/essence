@@ -1,12 +1,13 @@
 'use strict';
 module.exports = (runner, tasks) => {
-  let src      = runner.src;
-  let dest     = runner.dest;
-  let job      = runner.task;
-  let series   = runner.series;
-  let parallel = runner.parallel;
-  let watch    = runner.watch;
-  let merge    = require('merge-stream');
-  let buffer   = require('vinyl-buffer');
-  let c        = (require('./configure.json')).production;
+  const src      = runner.src;
+  const dest     = runner.dest;
+  const job      = runner.task;
+  const series   = runner.series;
+  const parallel = runner.parallel;
+  const watch    = runner.watch;
+  const merge    = require('merge-stream');
+  const contents = require('vinyl-string');
+  const buffer   = require('vinyl-buffer');
+  const c        = (require('./configure.json')).production;
 };
