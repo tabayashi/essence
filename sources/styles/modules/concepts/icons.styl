@@ -1,1 +1,18 @@
 @require "../atrules/font-face";
+
+iconfont(fontname)
+  font-face(fontname);
+  fontdata = json(fontname + '.json', {hash: true});
+  for iconname, charcode in fontdata
+    {"." + iconname}
+      font-family: fontname;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-style: normal;
+      font-variant: normal;
+      font-weight: normal;
+      speak: none;
+      text-decoration: none;
+      text-transform: none;
+      &::before
+        content: '\' + charcode;

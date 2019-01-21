@@ -16,8 +16,8 @@ module.exports = (runner, tasks) => {
   // ---------------------------------------------------------------------------
   job('browser.init', done => {
     tasks.browsersync.init({
-      proxy: '127.0.0.1:80',
-      port: 8080
+      proxy:'127.0.0.1:80',
+      port:8080
     });
     done();
   });
@@ -158,16 +158,11 @@ module.exports = (runner, tasks) => {
         .pipe(tasks.plumber())
         .pipe(tasks.imagemin([(require('imagemin-svgo'))()]))
         .pipe(tasks.iconfont({fontName: group}))
-        .on('glyphs', (glyphs, options) =>
-          contents(JSON.stringify({
-            fontname: group,
-            glyphs: glyphs.map(glyph => {
-              return {
-                name: glyph.name,
-                codepoint: glyph.unicode[0].charCodeAt(0).toString(16)
-              };
-            })
-          }), {path: group + '.json'}).pipe(dest(c.icons.dest.styles)))
+        .on('glyphs', glyphs =>
+          contents(JSON.stringify(glyphs.reduce((hash, glyph) => {
+            hash[glyph.name] = glyph.unicode[0].charCodeAt(0).toString(16);
+            return hash;
+          }, {})), {path: group + '.json'}).pipe(dest(c.icons.dest.styles)))
         .pipe(dest(c.icons.dest.fonts)))));
 
   job('icons.watch', () =>
