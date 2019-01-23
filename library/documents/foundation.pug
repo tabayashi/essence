@@ -28,7 +28,7 @@ html&attributes(attributes.html)
     block foot
       script
         :babel
-          ((classList) => {
+          (classList => {
             classList.remove('no-js');
             classList.add('js');
           })(document.documentElement.classList);

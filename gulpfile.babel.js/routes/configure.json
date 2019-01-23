@@ -1,50 +1,51 @@
 {
   "development": {
-    "data": {
-      "watch": "sources/data/files/**/*",
-      "src": "sources/data/files/**/*",
+    "files": {
+      "watch": "sources/files/**/*",
+      "src": "sources/files/**/*",
       "dest": "public"
     },
     "html": {
-      "watch": "sources/pages/**/*.pug",
-      "src": "sources/pages/files/**/*.pug",
-      "inc": "node_modules",
+      "watch": "sources/documents/**/*.pug",
+      "src": "sources/documents/**/*.pug",
+      "inc": "modules/documents",
       "dest": "public"
     },
     "css": {
       "watch": "sources/styles/**/*.styl",
-      "src": "sources/styles/files/*.styl",
+      "src": "sources/styles/*.styl",
       "inc": [
-        "sources/styles/data",
-        "sources/styles/modules",
-        "sources/styles/components"
+        "data/icons",
+        "data/sprites",
+        "library/styles",
+        "modules/styles"
       ],
       "dest": "public/styles"
     },
     "js": {
       "watch": "sources/scripts/**/*.js",
-      "src": "sources/scripts/files/*.js",
+      "src": "sources/scripts/*.js",
       "dest": "public/scripts"
     },
     "assets": {
-      "watch": "sources/assets/files/**/*",
-      "src": "sources/assets/files/**/*",
+      "watch": "sources/assets/**/*",
+      "src": "sources/assets/**/*",
       "dest": "public/assets"
     },
     "sprites": {
-      "watch": "sources/sprites/files/**/*.png",
-      "src": "sources/sprites/files/**/*.png",
+      "watch": "sources/sprites/**/*.png",
+      "src": "sources/sprites/**/*.png",
       "dest": {
         "img": "public/assets",
-        "css": "sources/styles/data"
+        "css": "data/sprites"
       }
     },
     "icons": {
-      "watch": "sources/icons/files/**/*.svg",
-      "src": "sources/icons/files/**/*.svg",
+      "watch": "sources/icons/**/*.svg",
+      "src": "sources/icons/**/*.svg",
       "dest": {
         "fonts": "public/fonts",
-        "styles": "sources/styles/data"
+        "styles": "data/icons"
       }
     }
   },

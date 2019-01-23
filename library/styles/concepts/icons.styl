@@ -4,7 +4,7 @@ iconfont(fontname)
   font-face(fontname);
   fontdata = json(fontname + '.json', {hash: true});
   for iconname, charcode in fontdata
-    {"." + iconname}
+    {"." + fontname + "-" + iconname}
       font-family: fontname;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;

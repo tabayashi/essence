@@ -1,3 +1,0 @@
-# essence
-module scaffold
-

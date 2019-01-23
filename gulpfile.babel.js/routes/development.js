@@ -1,15 +1,15 @@
 'use strict';
-module.exports = (runner, tasks) => {
-  const src      = runner.src;
-  const dest     = runner.dest;
-  const job      = runner.task;
-  const series   = runner.series;
-  const parallel = runner.parallel;
-  const watch    = runner.watch;
+module.exports = (gulp4, tasks) => {
+  const src      = gulp4.src;
+  const dest     = gulp4.dest;
+  const job      = gulp4.task;
+  const series   = gulp4.series;
+  const parallel = gulp4.parallel;
+  const watch    = gulp4.watch;
   const merge    = require('merge-stream');
   const contents = require('vinyl-string');
   const buffer   = require('vinyl-buffer');
-  const c        = (require('./configure.json')).development;
+  const config   = (require('./configure.json')).development;
 
   // ---------------------------------------------------------------------------
   // BrowserSync
@@ -28,37 +28,37 @@ module.exports = (runner, tasks) => {
   });
 
   // ---------------------------------------------------------------------------
-  // data files
+  // files
   // ---------------------------------------------------------------------------
-  job('data.build', () =>
-    src(c.data.src, {dot:true}).pipe(dest(c.data.dest)));
+  job('files.build', () =>
+    src(config.files.src, {dot:true}).pipe(dest(config.files.dest)));
 
-  job('data.watch', () =>
-    watch(c.data.watch, series('data.build', 'browser.reload')));
+  job('files.watch', () =>
+    watch(config.files.watch, series('files.build', 'browser.reload')));
 
   // ---------------------------------------------------------------------------
   // html
   // ---------------------------------------------------------------------------
   job('html.build', () =>
-    src(c.html.src)
+    src(config.html.src)
       .pipe(tasks.plumber())
       .pipe(tasks.pug({
         doctype: 'html',
         filters: {php: require('pug-php-filter')},
-        basedir: c.html.inc
+        basedir: config.html.inc
       }))
       .pipe(tasks.beautify())
       .pipe(tasks.replace(RegExp('\n+', 'g'), '\n'))
-      .pipe(dest(c.html.dest)));
+      .pipe(dest(config.html.dest)));
 
   job('html.watch', () =>
-    watch(c.html.watch, series('html.build', 'browser.reload')));
+    watch(config.html.watch, series('html.build', 'browser.reload')));
 
   // ---------------------------------------------------------------------------
   // css
   // ---------------------------------------------------------------------------
   job('css.build', () =>
-    src(c.css.src)
+    src(config.css.src)
       .pipe(tasks.plumber())
       .pipe(tasks.sourcemaps.init())
       .pipe(tasks.stylus({
@@ -66,7 +66,7 @@ module.exports = (runner, tasks) => {
           fontsURL:  '/fonts',
           assetsURL: '/assets'
         },
-        include: c.css.inc
+        include: config.css.inc
       }))
       .pipe(tasks.sourcemaps.write({includeContent: false}))
       .pipe(tasks.sourcemaps.init({loadMaps: true}))
@@ -76,52 +76,52 @@ module.exports = (runner, tasks) => {
       .pipe(tasks.csscomb())
       .pipe(tasks.beautify())
       .pipe(tasks.sourcemaps.write())
-      .pipe(dest(c.css.dest)));
+      .pipe(dest(config.css.dest)));
 
   job('css.watch', () =>
-    watch(c.css.watch, series('css.build', 'browser.reload')));
+    watch(config.css.watch, series('css.build', 'browser.reload')));
 
   // ---------------------------------------------------------------------------
   // js
   // ---------------------------------------------------------------------------
   job('js.build', () =>
-    src(c.js.src)
+    src(config.js.src)
       .pipe(tasks.plumber())
       .pipe(tasks.sourcemaps.init())
       .pipe(tasks.browserify())
       .pipe(tasks.beautify())
       .pipe(tasks.sourcemaps.write())
-      .pipe(dest(c.js.dest)));
+      .pipe(dest(config.js.dest)));
 
   job('js.watch', () =>
-    watch(c.js.watch, series('js.build', 'browser.reload')));
+    watch(config.js.watch, series('js.build', 'browser.reload')));
 
   // ---------------------------------------------------------------------------
   // assets
   // ---------------------------------------------------------------------------
   job('assets.build', () => {
     let filter = tasks.filter(['**/*.*', '!**/*@1x.*'], {restore: true});
-    return src(c.assets.src)
+    return src(config.assets.src)
       .pipe(tasks.plumber())
       .pipe(tasks.imagemin())
       .pipe(filter)
       .pipe(tasks.rename({suffix: '@2x'}))
-      .pipe(dest(c.assets.dest))
+      .pipe(dest(config.assets.dest))
       .pipe(tasks.rename(path => path.basename = path.basename.replace(/@2x/, '')))
       .pipe(tasks.reduce())
       .pipe(filter.restore)
       .pipe(tasks.rename(path => path.basename = path.basename.replace(/@1x/, '')))
-      .pipe(dest(c.assets.dest));
+      .pipe(dest(config.assets.dest));
   });
 
   job('assets.watch', () =>
-    watch(c.assets.watch, series('assets.build', 'browser.reload')));
+    watch(config.assets.watch, series('assets.build', 'browser.reload')));
 
   // ---------------------------------------------------------------------------
   // sprites
   // ---------------------------------------------------------------------------
   job('sprites.build', () =>
-    src(c.sprites.src).pipe(tasks.aggregate((group, files) => {
+    src(config.sprites.src).pipe(tasks.aggregate((group, files) => {
       let srcfiles = files.map(file => file.path);
       let sprite2x = src(srcfiles).pipe(tasks.sprite({
         imgName: group + '@2x.png',
@@ -129,7 +129,7 @@ module.exports = (runner, tasks) => {
         algorithm: 'binary-tree',
         padding: 6
       }));
-      let sprite1x = src(srcfiles).pipe(tasks.sprite({
+      let sprite1x = src(srcfiles).pipe(tasks.reduce()).pipe(tasks.sprite({
         imgName: group + '.png',
         cssName: group + '.json',
         algorithm: 'binary-tree',
@@ -137,23 +137,23 @@ module.exports = (runner, tasks) => {
       }));
       return merge(sprite2x.img.pipe(buffer())
                                .pipe(tasks.imagemin())
-                               .pipe(dest(c.sprites.dest.img)),
+                               .pipe(dest(config.sprites.dest.img)),
                    sprite1x.img.pipe(buffer())
                                .pipe(tasks.imagemin())
-                               .pipe(dest(c.sprites.dest.img)),
+                               .pipe(dest(config.sprites.dest.img)),
                    sprite1x.css.pipe(tasks.spritesheet())
                                .pipe(tasks.beautify())
-                               .pipe(dest(c.sprites.dest.css)));
+                               .pipe(dest(config.sprites.dest.css)));
     })));
 
   job('sprites.watch', () =>
-    watch(c.sprites.watch, series('sprites.build', 'browser.reload')));
+    watch(config.sprites.watch, series('sprites.build', 'browser.reload')));
 
   // ---------------------------------------------------------------------------
   // icons
   // ---------------------------------------------------------------------------
   job('icons.build', () =>
-    src(c.icons.src).pipe(tasks.aggregate((group, files) =>
+    src(config.icons.src).pipe(tasks.aggregate((group, files) =>
       src(files.map(file => file.path))
         .pipe(tasks.plumber())
         .pipe(tasks.imagemin([(require('imagemin-svgo'))()]))
@@ -162,11 +162,13 @@ module.exports = (runner, tasks) => {
           contents(JSON.stringify(glyphs.reduce((hash, glyph) => {
             hash[glyph.name] = glyph.unicode[0].charCodeAt(0).toString(16);
             return hash;
-          }, {})), {path: group + '.json'}).pipe(dest(c.icons.dest.styles)))
-        .pipe(dest(c.icons.dest.fonts)))));
+          }, {})), {path: group + '.json'})
+          .pipe(tasks.beautify())
+          .pipe(dest(config.icons.dest.styles)))
+        .pipe(dest(config.icons.dest.fonts)))));
 
   job('icons.watch', () =>
-    watch(c.icons.watch, series('icons.build', 'browser.reload')));
+    watch(config.icons.watch, series('icons.build', 'browser.reload')));
 
   // ---------------------------------------------------------------------------
   // deploy
@@ -174,7 +176,7 @@ module.exports = (runner, tasks) => {
   job('deploy', series(
     parallel('sprites.build', 'icons.build'),
     parallel('html.build', 'css.build', 'js.build',
-             'data.build', 'assets.build')));
+             'files.build', 'assets.build')));
 
   // ---------------------------------------------------------------------------
   // watch
@@ -183,7 +185,7 @@ module.exports = (runner, tasks) => {
     series('browser.init',
       parallel('sprites.watch', 'icons.watch',
                'html.watch', 'css.watch', 'js.watch',
-               'data.watch', 'assets.watch')));
+               'files.watch', 'assets.watch')));
 
   // ---------------------------------------------------------------------------
   // default
